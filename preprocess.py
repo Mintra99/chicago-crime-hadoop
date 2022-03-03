@@ -34,6 +34,57 @@ class preprocess():
         self.CC_0811["Date"] = pd.to_datetime(self.CC_0811['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
         self.CC_1217["Date"] = pd.to_datetime(self.CC_1217['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
 
+
+#################### We can use mapreducer for these ####################
+    def sort_date(self):
+        self.CC_0104 = self.CC_0104.sort_values(by="Date")
+        self.CC_0507 = self.CC_0507.sort_values(by="Date")
+        self.CC_0811 = self.CC_0811.sort_values(by="Date")
+        self.CC_1217 = self.CC_1217.sort_values(by="Date")
+    
+    def sort_block(self):
+        self.CC_0104 = self.CC_0104.sort_values(by="Block")
+        self.CC_0507 = self.CC_0507.sort_values(by="Block")
+        self.CC_0811 = self.CC_0811.sort_values(by="Block")
+        self.CC_1217 = self.CC_1217.sort_values(by="Block")
+#########################################################################
+
+## Create a barplot of how many of each type of crime ##
+## NOTE: Shorten this code somehow
+    def crime_plot(self):
+        crimedict = {}
+        for crime in self.CC_0104["Primary Type"]:
+            if crime not in crimedict:
+                crimedict[crime] = 1
+            else:
+                crimedict[crime] = crimedict[crime] + 1
+                
+        for crime in self.CC_0507["Primary Type"]:
+            if crime not in crimedict:
+                crimedict[crime] = 1
+            else:
+                crimedict[crime] = crimedict[crime] + 1
+                
+        for crime in self.CC_0811["Primary Type"]:
+            if crime not in crimedict:
+                crimedict[crime] = 1
+            else:
+                crimedict[crime] = crimedict[crime] + 1
+        
+        for crime in self.CC_1217["Primary Type"]:
+            if crime not in crimedict:
+                crimedict[crime] = 1
+            else:
+                crimedict[crime] = crimedict[crime] + 1
+        
+        names = list(crimedict.keys())
+        values = list(crimedict.values())
+        
+        plt.bar(range(len(crimedict)), values, tick_label=names)
+        plt.xticks(rotation='vertical')
+        plt.show()
+        pass
+    
     def set_columns(self):
         self.columns = self.CC_0104.columns
     
@@ -76,6 +127,7 @@ class preprocess():
     
 test = preprocess()
 test.fit()
-print(test.get_columns())
-print(test.get_rows_by_year())
-print(test.get_rows_by_crime())
+#print(test.get_columns())
+#print(test.get_rows_by_year())
+#print(test.get_rows_by_crime())
+test.crime_plot()
