@@ -15,6 +15,7 @@ class preprocess():
         self.CC_0811 = None
         self.CC_1217 = None
         self.columns = None
+        self.data = None
         
     def fit(self):
         self.set_dataframes()
@@ -22,17 +23,31 @@ class preprocess():
         self.datetime_convert()
 
     def set_dataframes(self):
-        nRowsRead = 1000
+        nRowsRead = 10000
         self.CC_0104 = pd.read_csv("data/Chicago_Crimes_2001_to_2004.csv", delimiter=',', nrows = nRowsRead)
         self.CC_0507 = pd.read_csv("data/Chicago_Crimes_2005_to_2007.csv", delimiter=',', nrows = nRowsRead)
         self.CC_0811 = pd.read_csv("data/Chicago_Crimes_2008_to_2011.csv", delimiter=',', nrows = nRowsRead)
         self.CC_1217 = pd.read_csv("data/Chicago_Crimes_2012_to_2017.csv", delimiter=',', nrows = nRowsRead)
+        
+        # Creating a list with all data in it
+        data = [self.CC_0104, self.CC_0507, self.CC_0811, self.CC_1217]
+        new_col = self.CC_0104.columns.tolist()
+        datalist = []
+        for i in data:
+            for j in i.values:
+                datalist.append(j)
+        
+        self.data = pd.DataFrame(datalist)
+        self.data.columns = new_col
+            
         
     def datetime_convert(self):
         self.CC_0104["Date"] = pd.to_datetime(self.CC_0104['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
         self.CC_0507["Date"] = pd.to_datetime(self.CC_0507['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
         self.CC_0811["Date"] = pd.to_datetime(self.CC_0811['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
         self.CC_1217["Date"] = pd.to_datetime(self.CC_1217['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
+        
+        self.data["Date"] = pd.to_datetime(self.data['Date'], format='%m/%d/%Y %I:%M:%S %p').dt.strftime('%d/%m/%Y %H:%M:%S')
 
 
 #################### We can use mapreducer for these ####################
@@ -49,29 +64,9 @@ class preprocess():
         self.CC_1217 = self.CC_1217.sort_values(by="Block")
 #########################################################################
 
-## Create a barplot of how many of each type of crime ##
-## NOTE: Shorten this code somehow
     def crime_plot(self):
-        crimedict = {}
-        for crime in self.CC_0104["Primary Type"]:
-            if crime not in crimedict:
-                crimedict[crime] = 1
-            else:
-                crimedict[crime] = crimedict[crime] + 1
-                
-        for crime in self.CC_0507["Primary Type"]:
-            if crime not in crimedict:
-                crimedict[crime] = 1
-            else:
-                crimedict[crime] = crimedict[crime] + 1
-                
-        for crime in self.CC_0811["Primary Type"]:
-            if crime not in crimedict:
-                crimedict[crime] = 1
-            else:
-                crimedict[crime] = crimedict[crime] + 1
-        
-        for crime in self.CC_1217["Primary Type"]:
+        crimedict = {}        
+        for crime in self.data["Primary Type"]:
             if crime not in crimedict:
                 crimedict[crime] = 1
             else:
@@ -81,19 +76,19 @@ class preprocess():
         values = list(crimedict.values())
         
         plt.bar(range(len(crimedict)), values, tick_label=names)
-        plt.xticks(rotation='vertical')
+        plt.xticks(rotation='vertical', fontsize=5)
         plt.show()
         pass
     
     def set_columns(self):
-        self.columns = self.CC_0104.columns
+        self.columns = self.data.columns
     
     def get_columns(self):
         return self.columns
     
     def get_rows_by_year(self):
         print("Please select a year between 2001 and 2017")
-        year = input("Enter what year you want: ")
+        year = int(input("Enter what year you want: "))
         if year >= 2001 and year <= 2004:
             return self.CC_0104.loc[self.CC_0104["Year"] == year]
         if year > 2004 and year <= 2007:
@@ -117,10 +112,13 @@ class preprocess():
         crime = input("Enter what crime you want: ")
         
         rows = []
-        rows.append(self.CC_0104.loc[self.CC_0104['Primary Type'] == crime])
-        rows.append(self.CC_0507.loc[self.CC_0507['Primary Type'] == crime])
-        rows.append(self.CC_0811.loc[self.CC_0811['Primary Type'] == crime])
-        rows.append(self.CC_1217.loc[self.CC_1217['Primary Type'] == crime])
+        # rows.append(self.CC_0104.loc[self.CC_0104['Primary Type'] == crime])
+        # rows.append(self.CC_0507.loc[self.CC_0507['Primary Type'] == crime])
+        # rows.append(self.CC_0811.loc[self.CC_0811['Primary Type'] == crime])
+        # rows.append(self.CC_1217.loc[self.CC_1217['Primary Type'] == crime])
+        
+        rows.append(self.data.loc[self.data['Primary Type'] == crime])
+        
         return rows
     
     
