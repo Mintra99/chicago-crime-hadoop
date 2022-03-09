@@ -23,7 +23,7 @@ class preprocess():
         self.datetime_convert()
 
     def set_dataframes(self):
-        nRowsRead = 10000
+        nRowsRead = 10000 # remove this when reading the whole thing (crashing if you rm it atm)
         self.CC_0104 = pd.read_csv("data/Chicago_Crimes_2001_to_2004.csv", delimiter=',', nrows = nRowsRead)
         self.CC_0507 = pd.read_csv("data/Chicago_Crimes_2005_to_2007.csv", delimiter=',', nrows = nRowsRead)
         self.CC_0811 = pd.read_csv("data/Chicago_Crimes_2008_to_2011.csv", delimiter=',', nrows = nRowsRead)
@@ -39,6 +39,14 @@ class preprocess():
         
         self.data = pd.DataFrame(datalist)
         self.data.columns = new_col
+        
+        # removing nullvalues
+        self.data[['X Coordinate', 'Y Coordinate']] = self.data[['X Coordinate', 'Y Coordinate']].replace(0, np.nan)
+        self.data.dropna()
+        
+        # removing irrelevant columns (Just add columns in drop_list to remove them)
+        drop_list = ["ID", "Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location", "District", "Community Area"]
+        self.data.drop(drop_list, axis = 1, inplace = True)
             
         
     def datetime_convert(self):
@@ -78,7 +86,6 @@ class preprocess():
         plt.bar(range(len(crimedict)), values, tick_label=names)
         plt.xticks(rotation='vertical', fontsize=5)
         plt.show()
-        pass
     
     def set_columns(self):
         self.columns = self.data.columns
@@ -125,7 +132,7 @@ class preprocess():
     
 test = preprocess()
 test.fit()
-#print(test.get_columns())
+print(test.get_columns())
 #print(test.get_rows_by_year())
 #print(test.get_rows_by_crime())
-test.crime_plot()
+#test.crime_plot()
