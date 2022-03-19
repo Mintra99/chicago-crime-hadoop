@@ -31,7 +31,7 @@ class preprocess():
 
     def set_dataframes(self):
         crimes_schema = StructType([
-                            #StructField("Unnamed: 0", StringType(),True),
+                            StructField("Unnamed: 0", StringType(),True),
                             StructField("ID", StringType(), True),
                             StructField("CaseNumber", StringType(), True),
                             StructField("Date", StringType(), True ),
@@ -62,9 +62,12 @@ class preprocess():
         self.CC_1217 = spark.read.csv("data/Chicago_Crimes_2012_to_2017.csv", header = True, schema=crimes_schema)
         
         self.to_present = self.__unionAll([self.CC_0104, self.CC_0507, self.CC_0811, self.CC_1217])
+        self.to_present = self.to_present.where(col("XCoordinate").isNotNull())
+        self.to_present = self.to_present.where(col("Ward").isNotNull())
+        self.to_present = self.to_present.where(col("CommunityArea").isNotNull())
         self.to_present = self.to_present.drop("ID", "Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location", "District", "Community Area")
         
-        #self.to_present = self.to_present.na.drop()
+        
         
         
     def __datetime_converter(self):
