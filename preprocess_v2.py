@@ -1,8 +1,10 @@
 import functools
+from matplotlib.pyplot import show
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, unix_timestamp, col
+import plotly.express as px
 spark = SparkSession.builder.appName("Chicago_crime_analysis").getOrCreate()
 from pyspark.sql.types import  (StructType, 
                                 StructField, 
@@ -12,7 +14,6 @@ from pyspark.sql.types import  (StructType,
                                 IntegerType,
                                 StringType,
                                TimestampType)
-
 
 class preprocess():
     def __init__(self):
@@ -65,7 +66,7 @@ class preprocess():
         self.to_present = self.to_present.where(col("XCoordinate").isNotNull())
         self.to_present = self.to_present.where(col("Ward").isNotNull())
         self.to_present = self.to_present.where(col("CommunityArea").isNotNull())
-        self.to_present = self.to_present.drop("ID", "Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location", "District", "Community Area")
+        self.to_present = self.to_present.drop("ID", "Case Number", "IUCR", "FBI Code", "Location", "District", "Community Area")
         
         
         
@@ -82,9 +83,26 @@ class preprocess():
         return self.to_present.select("Date").show(20, False)
         #return self.to_present.show(20, False)
     
+    def map_plotter(self):
+        # Have limited it to 1000 becaus using the whole data crashees the spark session
+        # Edit it so that we have more specific stuf to find
+        map_marks = self.to_present.limit(1000).toPandas()
+        map_marks[['Latitude', 'Longitude']]
+        fig = px.scatter_mapbox(map_marks, lat="Latitude", lon="Longitude", 
+                        color_discrete_sequence=["fuchsia"], zoom=9, height=650)
+        fig.update_layout(mapbox_style="open-street-map")
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.show()
+        
+    # Ideas for things to do
+    # https://medium.com/@stafa002/my-notes-on-chicago-crime-data-analysis-ed66915dbb20
+    # https://www.tandfonline.com/doi/abs/10.1080/02522667.2019.1582878
+
+
     
     
 test = preprocess()
 test.fit()
-test.get_data()
+#test.get_data()
+test.map_plotter()
 
