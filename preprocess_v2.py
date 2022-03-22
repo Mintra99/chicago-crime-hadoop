@@ -5,6 +5,7 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, unix_timestamp, col
 import plotly.express as px
+import matplotlib.pyplot as plt # plotting
 spark = SparkSession.builder.appName("Chicago_crime_analysis").getOrCreate()
 from pyspark.sql.types import  (StructType, 
                                 StructField, 
@@ -66,7 +67,10 @@ class preprocess():
         self.to_present = self.to_present.where(col("XCoordinate").isNotNull())
         self.to_present = self.to_present.where(col("Ward").isNotNull())
         self.to_present = self.to_present.where(col("CommunityArea").isNotNull())
-        self.to_present = self.to_present.drop("ID", "Case Number", "IUCR", "FBI Code", "Location", "District", "Community Area")
+        self.to_present = self.to_present.drop("Unnamed: 0","ID", "CaseNumber", "IUCR", "FBICode", "Location", 
+                                               "District", "CommunityArea", "UpdatedOn","XCoordinate", 
+                                               "YCoordinate", "Domestic", "Beat", "Description", "Block")
+        self.to_present = self.to_present.na.drop()
         
         
         
@@ -80,8 +84,8 @@ class preprocess():
             
             
     def get_data(self):
-        return self.to_present.select("Date").show(20, False)
-        #return self.to_present.show(20, False)
+        #return self.to_present.select("Date").show(20, False)
+        return self.to_present.show(20, False)
     
     def map_plotter(self):
         # Have limited it to 1000 becaus using the whole data crashees the spark session
@@ -98,11 +102,22 @@ class preprocess():
     # https://medium.com/@stafa002/my-notes-on-chicago-crime-data-analysis-ed66915dbb20
     # https://www.tandfonline.com/doi/abs/10.1080/02522667.2019.1582878
 
-
+    def piechart(self):
+        plt.style.use(plt.style.available[9])
+        plt.figure(figsize=(8,8))
+        plt.pie(
+            self.to_present.limit(100000).toPandas().groupby("PrimaryType").sum()["Arrest"],
+            labels=self.to_present.limit(100000).toPandas().groupby("PrimaryType").sum().index,
+            radius=1, 
+            autopct='%0.1f%%', )
+            #explode=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        plt.title('Crime types', fontdict={'fontsize': 16})
+        plt.show()
     
     
 test = preprocess()
 test.fit()
 #test.get_data()
-test.map_plotter()
+#test.map_plotter()
+test.piechart()
 
