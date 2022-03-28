@@ -1,3 +1,4 @@
+from unittest import result
 from mrjob.job import MRJob
 from k_clustering_point_class import Point
 import math
@@ -7,6 +8,7 @@ import random
 
 #       Python without MapReduce
 import csv
+
 file = open('python_preprocess.csv')
 # type(file)
 #       filtypen er "_io.TextIOWrapper"
@@ -21,7 +23,7 @@ header = next(csvreader)
 #       ROWS er de faktiske verdiene
 rows = []
 for row in csvreader:
-        rows.append(row)
+    rows.append(row)
 rows
 file.close()
 
@@ -104,14 +106,24 @@ def getCentroids(list):
 def getCoords():
     allcoord = []
     for line in rows:
-        x_coord = line[0].split('M;(')
-        # x_coord = x_coord[len(x_coord)-1]
-        if len(x_coord) > 1:
-            x_coord = float(x_coord[1])
-            y_coord = line[1]
-            y_coord = float(y_coord[1:len(y_coord)-1])
-            coord = [x_coord, y_coord]
-            allcoord.append(coord)
+        line[-1] = ''.join(c for c in line[-1] if c not in '()')
+        coords = line[-1].split(',')
+        x_coord = float(coords[0])
+        y_coord = float(coords[1])
+        new_coord = [x_coord, y_coord]
+        allcoord.append(new_coord)
+        '''
+        TH sin kode, funker ikke på min csv
+        '''
+        # x_coord = line[0].split('M;(')
+        
+        # # x_coord = x_coord[len(x_coord)-1]
+        # if len(x_coord) > 1:
+        #     x_coord = float(x_coord[1])
+        #     y_coord = line[1]
+        #     y_coord = float(y_coord[1:len(y_coord)-1])
+        #     coord = [x_coord, y_coord]
+        #     allcoord.append(coord)
     return allcoord
 
 
@@ -186,7 +198,7 @@ if __name__ == "__main__":
 
     mapper(centroids, coords, k)
     mean = reducer(centroids)
-    # print(mean)
+    print(mean)
     i = 1
     while done == False:
         centroids = getCentroids(mean)
