@@ -18,15 +18,17 @@ class Point():
     def get_num_points(self):
         return self.num_points
 
-    """
-    def sum(self, p):
-        for i in range(p):
-            self.components[i] += p.components[i]
-        self.num_points += p.numPoints
-    """
-
     def getDimensions(self):
         return self.x_y_dimensions
+    
+    def add_to_average(self, coord):
+        # print(self.x_y_dimensions)
+        new_average_x = (self.num_points * self.x_y_dimensions[0] + coord[0]) / (self.num_points + 1)
+        new_average_y = (self.num_points * self.x_y_dimensions[1] + coord[1]) / (self.num_points + 1)
+        
+        self.num_points += 1
+        self.x_y_dimensions = [new_average_x, new_average_y]
+        # print(self.x_y_dimensions)
 
     def average(self):
         x = float(0)

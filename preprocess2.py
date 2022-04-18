@@ -24,13 +24,16 @@ data = pd.DataFrame(datalist)
 # Remove duplicates
 data.drop_duplicates()
 
+data2 = data
+
 new_col = CC_0104.columns.tolist()
 data.columns = new_col
 
-drop_list = ["NUM", "ID", "Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location Description", "Ward", "District", "X Coordinate", "Y Coordinate"]
+drop_list = ["Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location Description", "Ward", "District", "X Coordinate", "Y Coordinate"]
 # drop_list = ["FBI Code", "Latitude", "Longitude", "Location Description", "Ward", "District", "X Coordinate", "Y Coordinate"]
 data.drop(drop_list, axis = 1, inplace = True)
 
+drop_list2 = ["ID", "Case Number", "IUCR", "FBI Code", "Latitude", "Longitude", "Location Description", "Ward", "District", "X Coordinate", "Y Coordinate"]
 # removing nullvalues
 # data[['X Coordinate', 'Y Coordinate']] = data[['X Coordinate', 'Y Coordinate']].replace(0, np.nan)
 # print(data[['Location']])

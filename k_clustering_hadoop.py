@@ -87,6 +87,23 @@ EMIT(closest_centroid, point)
 
 def getRandomCentroids(coords, k=3):
     centroids = []
+    # print(len(coords))
+    point_index = []
+    i_list = [784724, 1108647, 1458107, 495697, 1378509]
+    for i in range(k):
+        # value = random.randint(0,len(coords)-1)
+        value = i_list[i]
+        print(value)
+        point_index.append(coords[value])
+    # print(point_index)
+    for i in range(k):
+        p = Point([], point_index[i])
+        centroids.append(p)
+    return centroids
+
+"""
+def getRandomCentroids(coords, k=3):
+    centroids = []
     point_index = []
     for _ in range(k):
         point_index.append(coords[random.randint(0,len(coords)-1)])
@@ -95,6 +112,7 @@ def getRandomCentroids(coords, k=3):
         p = Point([], point_index[i])
         centroids.append(p)
     return centroids
+"""
 
 def getCentroids(list):
     centroids = []
@@ -115,7 +133,7 @@ def getCoords():
         '''
         TH sin kode, funker ikke på min csv
         '''
-        # x_coord = line[0].split('M;(')
+        x_coord = line[0].split('M;(')
         
         # # x_coord = x_coord[len(x_coord)-1]
         # if len(x_coord) > 1:
@@ -186,48 +204,54 @@ method COMBINER(centroid_index, list_of_points)
 #         yield key, sum(values)
 
 if __name__ == "__main__":
-    k=3
+    k=5
     done = False
     coords = getCoords()
     centroids=getRandomCentroids(coords, k)
-    # print(centroids)
-
+    ## print(centroids)
     # recalculate cluster representative hver gang vi leger til noe nytt i cluster
     # then iterate the dataset again, compute the sim between
     # each element and its curent cluster
 
     mapper(centroids, coords, k)
+    """
+    for c in centroids:
+        print(c.getDimensions())
+    """
     mean = reducer(centroids)
-    print(mean)
+    # print(mean)
     i = 1
     while done == False:
         centroids = getCentroids(mean)
         mapper(centroids, coords, k)
         new_mean = reducer(centroids)
         i += 1
+        # print(new_mean)
+        # print(i)
         if new_mean == mean:
-            print(i)
-            print(new_mean)
+            
             done = True
         else:
             mean = new_mean
+    print(mean)
     
+    # 1. Create k clusters
+    # 2. Select window lengths for training and test data respectively,
+    # select a test period and training period
 
+    # Data Mining:
+    # 1. Create N training series
+    # 2. Normalise the series so that the first values of the series fall
+    # between 0 and 1
+    # 3. partition the data into k clusters, which are represented by the
+    # centers.
+    # 4. Classify the clusters into three distinct classes using a linear
+    # regression model
 
-    # var_list = []
-    # sims = 100
-    # for _ in range(sims):
-    #     centroids = mapper()
-    #     var = reducer(centroids)
-    #     var_list.append(var)
-    #     centroids = []
-    
-    # best_x_y = 1000
-    # for var in var_list:
-    #     total_var = var[0] + var[1]
-    #     if total_var < best_x_y:
-    #         best_x_y = total_var
-    # print(best_x_y)
-
-    
-    #MRCountSum.run()
+    # Test models on test data
+    # 1. Form a test series dataset and normalize it
+    # 2. Assign a cluster label to time series i in test data so that
+    # cluster j has the smalles Euclidean distance to the normalized series i
+    # 3. Assign the class k=3 ("UP", "DOWN", "HOLD") of cluster j to time
+    # series i, where time series i has cluter label j
+    # 4. Calculate returns for a selected trading strategy
