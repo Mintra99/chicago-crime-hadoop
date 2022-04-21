@@ -228,7 +228,8 @@ class spark_k_means():
 
         for center in centers:
             self.x_list.append(center[0])
-            self.y_list.append(center[1])   
+            self.y_list.append(center[1]) 
+            print(center)  
             
         transformed = model.transform(df_kmeans).select('id', 'prediction')
         rows = transformed.collect()
