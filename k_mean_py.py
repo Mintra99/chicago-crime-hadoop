@@ -55,9 +55,10 @@ def getDistance(c, coord):
 
 def getRandomCentroids(coords, k=3):
     centroids = []
-    # print(len(coords))
+    print(len(coords))
     point_index = []
     i_list = [784724, 1108647, 1458107, 495697, 1378509]
+    # i_list = [1284724, 1008647, 58107, 1405697, 8509]
     for i in range(k):
         # value = random.randint(0,len(coords)-1)
         value = i_list[i]
@@ -79,10 +80,18 @@ def getCentroids(list):
 def getCoords():
     allcoord = []
     for line in rows:
-        line[-1] = ''.join(c for c in line[-1] if c not in '()')
-        coords = line[-1].split(',')
-        x_coord = float(coords[0])
-        y_coord = float(coords[1])
+        # line[-1] = ''.join(c for c in line[-1] if c not in '()')
+        # coords = line[-1].split(',')
+
+        try:
+            x_coord = float(line[-2].strip())
+        except ValueError:
+            x_coord = float(0)
+        
+        try:
+            y_coord = float(line[-1].strip())
+        except ValueError:
+            y_coord = float(0)
         new_coord = [x_coord, y_coord]
         allcoord.append(new_coord)
     return allcoord
