@@ -1,4 +1,5 @@
 import math
+import numpy as np
 #import findspark
 
 # spark imports
@@ -16,79 +17,39 @@ crimes_schema = StructType([StructField("ID", IntegerType(), True),
                             ])
 
 class spark_kmeans():
-    def __init__(self):
-        self.coords = []
-        self.x_list = []
-        self.y_list = []
-        self.prediction = []
-        self.coord_df = None
-        self.closest_centroid = {}
-        self.prev_centroid = []
-        self.centroids = [[41.775185697, -87.659244248],
-                           [41.926404101, -87.792881805],
-                           [41.846664648, -87.617318718],
-                           [41.954345702, -87.726412567]]
-        
-        
-    def fit(self):
-        self.convert_coords()
-        self.kmeans()
-
-        
-    def convert_coords(self):
-        for coord in location.collect():
-            cleaned_coord = ''.join(c for c in coord["Location"] if c not in '()')
-            new_coords = cleaned_coord.split(',')
-            x_coord = float(new_coords[0])
-            y_coord = float(new_coords[1])
-            coords = [x_coord, y_coord]
-            self.coords.append(coords)
-    
     def getDistance(self, centroid, point):
         cur_dist = math.sqrt((centroid[0]-point[0])**2 + (centroid[0]-point[0])**2) 
         return cur_dist    
         
-    def map(self):
-        self.closest_centroid = {}
-        self.prediction = []
-        for point in self.coords:
+    def map(self, pointList, centroids):
+        centroid_dict = {}
+        for point in pointList:
             min_dist = math.inf
             closest_centroid = -1
-            for centroid in self.centroids:
+            for centroid in centroids:
                 curr_dist = self.getDistance(centroid, point)                
                 if curr_dist < min_dist:
                     min_dist = curr_dist
                     closest_centroid = centroid
-                    
-            self.prediction.append(self.centroids.index(closest_centroid))
-            if tuple(closest_centroid) not in self.closest_centroid:
-                self.closest_centroid[tuple(closest_centroid)] = list()
-            self.closest_centroid[tuple(closest_centroid)].extend([point])
+
+            if tuple(closest_centroid) not in centroid_dict:
+                centroid_dict[tuple(closest_centroid)] = list()
+            centroid_dict[tuple(closest_centroid)].extend([point])
+        return centroid_dict
  
-    def reduce(self):
+    def reduce(self, mapped_data):
         new_centroid = []
-        for centroid in self.closest_centroid:
+        for centroid in mapped_data:
             X = []
             Y = []
             counter=0
-            for point in self.closest_centroid[centroid]:
+            for point in mapped_data[centroid]:
                 X.append(point[0])
                 Y.append(point[1])
                 counter += 1
             new_centroid.append([sum(X)/counter, sum(Y)/counter])
-            
-        self.prev_centroid = self.centroids
-        self.centroids = new_centroid
     
-    def kmeans(self):
-        while self.centroids != self.prev_centroid:
-            self.map()   
-            self.reduce()  
-            
-        for centroid in self.centroids:
-            self.x_list.append(centroid[0])
-            self.y_list.append(centroid[1])
-            print(centroid)
+        return new_centroid
 
 
 class WRCentroids():
@@ -135,14 +96,34 @@ class WRCentroids():
     
     def checkCloseness(a, b, rel_tol=1e-05, abs_tol=0.0):
         return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
-
+    
+    
+    # Spark exclusive
+    def convertPoints(self, points):
+        coordList = []
+        i = 0
+        for coord in points.collect():
+            # to skip column name
+            if i == 0:
+                i+=1
+                continue
+            cleaned_coord = ''.join(c for c in coord["Location"] if c not in '()')
+            new_coords = cleaned_coord.split(',')
+            x_coord = float(new_coords[0])
+            y_coord = float(new_coords[1])
+            coords = [x_coord, y_coord]
+            coordList.append(coords)
+        return coordList
 
 if __name__ == "__main__":
-    """install_requires=[
+    """
+    install_requires=[
         'pyspark=={site.SPARK_VERSION}'
-    ]"""
+    ]
+    """
 
     wrCentroid = WRCentroids()
+    kmeans = spark_kmeans()
 
     conf = SparkConf().setAppName("PySPark CrimesChicago").setMaster("local[*]")
     sc = SparkContext(conf=conf)
@@ -151,15 +132,62 @@ if __name__ == "__main__":
     spark = SparkSession.builder.master("local[*]").getOrCreate()
 
     distFile = sc.textFile("data.txt")
+    
+    
+    ###############
+    rdd = spark.read.csv('hdfs://namenode:9000/DAT500/spark_preprocess.csv', schema=crimes_schema)
+    points = rdd.select("Location")
+    centroids = wrCentroid.retrieveCentroids('starting_centroid.txt')
+    # points.show(5)
+    ###############
+    
+    # first run
+    pointList = wrCentroid.convertPoints(points)
+    mapped_points = kmeans.map(pointList, centroids)
+    new_centroids = kmeans.reduce(mapped_points)
+    
+    # after first run
+    while True:
+        min_dist = 0.0001
+        done = True
+        for i in range(len(new_centroids)):
+            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+            if distance > min_dist:
+                done = False
 
-    rdd = sc.textFile("hdfs://DAT500/spark_preprocess.csv")
+        if done:
+            print(new_centroids)
+            break
+        else:
+            centroids = new_centroids
+            mapped_points = kmeans.map(pointList, centroids)
+            new_centroids = kmeans.reduce(mapped_points)
 
-    # lambda = rows/lines
-    # mapper lengden til linja.
-    # reducer alt
-    rdd.map(lambda s: len(s)).reduce(lambda a, b: a + b)
 
-    i = 1 # + " --centroids=" \ # mellom data og files
+    # # read input file to RDD
+    # rdd = sc.textFile("hdfs:///DAT500/spark_preprocess.csv")
+
+    # # collect the RDD to list
+    # llist = rdd.collect()
+
+    # # print the list
+    # for line in llist:
+    #     print(line)
+    # # lambda = rows/lines
+    # # mapper lengden til linja.
+    # # reducer alt
+    # rdd.map(lambda s: len(s)).reduce(lambda a, b: a + b)
+
+    #i = 1 # + " --centroids=" \ # mellom data og files
+    
+    #while True:
+        # print("--Iteration n. {itr:d}".format(itr=n+1), end="\r", flush=True)
+
+        
+        # reducer: for each cluster, compute the sum of the points belonging to it. 
+        # It is mandatory to pass one associative function as a parameter. 
+        # The associative function (which accepts two arguments and returns a single element) 
+        # should be commutative and associative in mathematical nature
     """
     while True:
         distFile.map(lambda s: len(s)).reduce(lambda a, b: a + b)
@@ -182,8 +210,5 @@ if __name__ == "__main__":
                 wrCentroid.writeCentroids(centroids, file)
         i +=1
     """
-
-    kmeans = spark_kmeans()
-    kmeans.fit()
 
     # https://spark.apache.org/docs/latest/rdd-programming-guide.html
