@@ -77,7 +77,8 @@ class KMeansJob(MRJob): # , dim=None):
         return centroids
     
     # I mapper innit lag en kobling til databasen
-
+    def mapper_init(self):
+        self.dimensions = self.retrieveCentroids(self.options.centroids)
     # I mapper insert til databasen
 
     def mapper(self, _, line): # mapper, key, record
@@ -98,12 +99,11 @@ class KMeansJob(MRJob): # , dim=None):
         min_dist = math.inf
         closest_centroid = -1
 
-        centroids = self.retrieveCentroids(self.options.centroids)
         # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
-        for c in centroids:
+        for c in self.dimensions:
             distance = math.sqrt(pow(new_coord[0]-c[0], 2) + pow(new_coord[1] - c[1], 2)) 
             if distance < min_dist:
-                closest_centroid = centroids.index(c)
+                closest_centroid = self.dimensions.index(c)
                 min_dist = distance
         yield closest_centroid, new_coord
 

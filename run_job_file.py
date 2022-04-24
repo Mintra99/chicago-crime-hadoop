@@ -1,4 +1,5 @@
 # run.py
+import math
 from re import L
 # from utkast_mapReduce import KMeansJob
 
@@ -69,6 +70,10 @@ class WRCentroids():
             string_item = ''.join(c for c in str(item) if c not in "[]")
             f.write("%s\n" % string_item)
         f.close()
+    
+    def checkCloseness(a, b, rel_tol=1e-05, abs_tol=0.0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 # file = "starting_centroids.txt"
 output = 'final_centroids.txt'
@@ -90,7 +95,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--inputFile", type=str,
-    help="python_preprocessed.csv")
+    help="python_preprocess.csv")
 
     parser.add_argument("--centroids", type=str,
     help="starting_centroids.txt")
@@ -131,13 +136,19 @@ if __name__ == "__main__":
         print("NEW CENTROIDS: " + str(new_centroids))
 
         # """
-        if sorted(centroids) != sorted(new_centroids):
+        min_dist = 0.0001
+        done = True
+        for i in range(len(new_centroids)):
+            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+            if distance > min_dist:
+                done = False
+
+        if done:
+            break
+        else:
             centroids = new_centroids
             if len(centroids) != 0:
                 wrCentroid.writeCentroids(centroids, file)
-        else:
-            # print("NEW CENTROIDS: " + str(new_centroids))
-            break
         # """
         
         i +=1

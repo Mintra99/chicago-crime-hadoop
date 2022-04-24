@@ -7,6 +7,7 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
 
+
 crimes_schema = StructType([StructField("ID", IntegerType(), True),
                             StructField("Date", StringType(), True ),
                             StructField("Primary Type", StringType(), True  ),
@@ -148,9 +149,12 @@ if __name__ == "__main__":
     sc = SparkContext(conf=conf)
 
     #findspark.init()
+    """
     spark = SparkSession.builder.master("local[*]").getOrCreate()
-
-    distFile = sc.textFile("data.txt")
+    dataset = spark.read.csv('spark_preprocess.csv', header = True,schema = crimes_schema)
+    dataset = dataset.drop("ID")
+    location = dataset.limit(150000).select("Location")
+    """
 
     rdd = sc.textFile("hdfs://DAT500/spark_preprocess.csv")
 
@@ -160,9 +164,14 @@ if __name__ == "__main__":
     rdd.map(lambda s: len(s)).reduce(lambda a, b: a + b)
 
     i = 1 # + " --centroids=" \ # mellom data og files
+
+
+    # distFile.map(lambda s: len(s)).reduce(lambda a, b: a + b)
+
+
     """
     while True:
-        distFile.map(lambda s: len(s)).reduce(lambda a, b: a + b)
+      
 
         new_centroids = wrCentroid.retrieveCentroids(output)
         print("NEW CENTROIDS: " + str(new_centroids))
