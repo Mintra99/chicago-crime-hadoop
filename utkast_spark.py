@@ -6,7 +6,6 @@ from unittest import skip
 # os.environ["SPARK_HOME"] = "/content/spark-2.4.5-bin-hadoop2.7"
 
 import sys
-sys.setrecursionlimit(1000)
 
 import findspark
 from matplotlib import pyplot as plt

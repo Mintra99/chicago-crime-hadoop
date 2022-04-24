@@ -10,6 +10,7 @@ import argparse
 
 import os
 import subprocess
+import time
 # import sys
 
 # python3 run_job.py < python_preprocess.csv > file
@@ -73,6 +74,12 @@ class WRCentroids():
     
     def checkCloseness(a, b, rel_tol=1e-05, abs_tol=0.0):
         return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+    
+    def writeTime(self, time_list):
+        f = open('time_list_file.txt', "w+")
+        string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) + ' | run time: ' + str(time_list[2])
+        f.write("%s\n" % string_item)
+        f.close()
 
 
 # file = "starting_centroids.txt"
@@ -110,11 +117,12 @@ if __name__ == "__main__":
     centroids = wrCentroid.retrieveCentroids(file)
 
     i = 1 # + " --centroids=" \ # mellom data og files
+    start_time = time.time()
     while True:
         print("ITERATION: " + str(i))
         command = "python3 utkast_fileVersion.py < " \
         + data + " --centroids " + file + " > " + output \
-        + " -r inline"
+        + " -r hadoop"
         # if in local
         # if in hadoop
         print(command)
@@ -136,14 +144,18 @@ if __name__ == "__main__":
         print("NEW CENTROIDS: " + str(new_centroids))
 
         # """
-        min_dist = 0.0001
+        min_dist = 0.00000001
         done = True
-        for i in range(len(new_centroids)):
-            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+        for j in range(len(new_centroids)):
+            distance = math.sqrt(pow(centroids[j][0]-new_centroids[j][0], 2) + pow(centroids[j][1] - new_centroids[j][1], 2)) 
             if distance > min_dist:
                 done = False
 
         if done:
+            end_time = time.time()
+            run_time = end_time - start_time
+            time_list = [start_time, end_time, run_time]
+            wrCentroid.writeTime(time_list)
             break
         else:
             centroids = new_centroids
