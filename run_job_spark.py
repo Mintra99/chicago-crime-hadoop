@@ -1,6 +1,5 @@
 import math
-import numpy as np
-#import findspark
+import time
 
 # spark imports
 from pyspark.sql.types import *
@@ -115,13 +114,15 @@ class WRCentroids():
             coords = [x_coord, y_coord]
             coordList.append(coords)
         return coordList
+    
+    def writeTime(self, time_list):
+        f = open('time_list_file.txt', "w+")
+        string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) + ' | run time: ' + str(time_list[2])
+        f.write("%s\n" % string_item)
+        f.close()
 
 if __name__ == "__main__":
-    """
-    install_requires=[
-        'pyspark=={site.SPARK_VERSION}'
-    ]
-    """
+    start_time = time.time()
 
     wrCentroid = WRCentroids()
     kmeans = spark_kmeans()
@@ -135,30 +136,35 @@ if __name__ == "__main__":
 
     distFile = sc.textFile("data.txt")
     
-    
-    ###############
     rdd = spark.read.csv('hdfs://namenode:9000/DAT500/spark_preprocess.csv', schema=crimes_schema)
     points = rdd.select("Location")
     centroids = wrCentroid.retrieveCentroids('starting_centroid.txt')
-    # points.show(5)
-    ###############
     
     # first run
     pointList = wrCentroid.convertPoints(points)
     mapped_points = kmeans.map(pointList, centroids)
     new_centroids = kmeans.reduce(mapped_points)
     
+    iterations = 1
+    start_time = time.time()
     # after first run
     while True:
-        min_dist = 0.0001
+        min_dist = 0.00000001
         done = True
         for i in range(len(new_centroids)):
             distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
             if distance > min_dist:
                 done = False
 
+        iterations += 1
         if done:
+            end_time = time.time()
+            run_time = end_time - start_time
+            time_list = [start_time, end_time, run_time]
+            wrCentroid.writeTime(time_list)
             print(new_centroids)
+            print("Iterations: %s" % iterations)
+            print("--- %s seconds ---" % (time.time() - start_time))
             break
         else:
             centroids = new_centroids
