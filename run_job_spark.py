@@ -1,6 +1,5 @@
 import math
-import numpy as np
-#import findspark
+import time
 
 # spark imports
 from pyspark.sql.types import *
@@ -116,11 +115,7 @@ class WRCentroids():
         return coordList
 
 if __name__ == "__main__":
-    """
-    install_requires=[
-        'pyspark=={site.SPARK_VERSION}'
-    ]
-    """
+    start_time = time.time()
 
     wrCentroid = WRCentroids()
     kmeans = spark_kmeans()
@@ -133,62 +128,39 @@ if __name__ == "__main__":
 
     distFile = sc.textFile("data.txt")
     
-    
-    ###############
     rdd = spark.read.csv('hdfs://namenode:9000/DAT500/spark_preprocess.csv', schema=crimes_schema)
     points = rdd.select("Location")
     centroids = wrCentroid.retrieveCentroids('starting_centroid.txt')
-    # points.show(5)
-    ###############
     
     # first run
     pointList = wrCentroid.convertPoints(points)
     mapped_points = kmeans.map(pointList, centroids)
     new_centroids = kmeans.reduce(mapped_points)
     
+    iterations = 1
     # after first run
     while True:
-        min_dist = 0.0001
+        min_dist = 0.00000001
         done = True
         for i in range(len(new_centroids)):
             distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
             if distance > min_dist:
                 done = False
 
+        iterations += 1
         if done:
             print(new_centroids)
+            print("Iterations: %s" % iterations)
+            print("--- %s seconds ---" % (time.time() - start_time))
             break
         else:
             centroids = new_centroids
             mapped_points = kmeans.map(pointList, centroids)
             new_centroids = kmeans.reduce(mapped_points)
 
-
-    # # read input file to RDD
-    # rdd = sc.textFile("hdfs:///DAT500/spark_preprocess.csv")
-
-    # # collect the RDD to list
-    # llist = rdd.collect()
-
-    # # print the list
-    # for line in llist:
-    #     print(line)
-    # # lambda = rows/lines
-    # # mapper lengden til linja.
-    # # reducer alt
-    # rdd.map(lambda s: len(s)).reduce(lambda a, b: a + b)
-
-    #i = 1 # + " --centroids=" \ # mellom data og files
-    
-    #while True:
-        # print("--Iteration n. {itr:d}".format(itr=n+1), end="\r", flush=True)
-
-        
-        # reducer: for each cluster, compute the sum of the points belonging to it. 
-        # It is mandatory to pass one associative function as a parameter. 
-        # The associative function (which accepts two arguments and returns a single element) 
-        # should be commutative and associative in mathematical nature
+   
     """
+    i = 1 # + " --centroids=" \ # mellom data og files
     while True:
         distFile.map(lambda s: len(s)).reduce(lambda a, b: a + b)
 
@@ -209,6 +181,7 @@ if __name__ == "__main__":
             if len(centroids) != 0:
                 wrCentroid.writeCentroids(centroids, file)
         i +=1
+    # https://spark.apache.org/docs/latest/rdd-programming-guide.html
     """
 
-    # https://spark.apache.org/docs/latest/rdd-programming-guide.html
+    
