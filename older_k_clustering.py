@@ -90,7 +90,7 @@ def getRandomCentroids(coords, k=3):
     point_index = []
     for _ in range(k):
         point_index.append(coords[random.randint(0,len(coords)-1)])
-    
+    print(point_index)
     for i in range(k):
         p = Point([], point_index[i])
         centroids.append(p)
@@ -106,14 +106,20 @@ def getCentroids(list):
 def getCoords():
     allcoord = []
     for line in rows:
-        x_coord = line[0].split('M;(')
-        # x_coord = x_coord[len(x_coord)-1]
-        if len(x_coord) > 1:
-            x_coord = float(x_coord[1])
-            y_coord = line[1]
-            y_coord = float(y_coord[1:len(y_coord)-1])
-            coord = [x_coord, y_coord]
-            allcoord.append(coord)
+        # line[-1] = ''.join(c for c in line[-1] if c not in '()')
+        # coords = line[-1].split(',')
+
+        try:
+            x_coord = float(line[-2].strip())
+        except ValueError:
+            x_coord = float(0)
+        
+        try:
+            y_coord = float(line[-1].strip())
+        except ValueError:
+            y_coord = float(0)
+        new_coord = [x_coord, y_coord]
+        allcoord.append(new_coord)
     return allcoord
 
 
@@ -167,7 +173,7 @@ method COMBINER(centroid_index, list_of_points)
 # line = line.strip() # remove leading and trailing whitespace
 # yield line, 1
 
-
+# [[41.899082422, -87.71917838], [41.941161268, -87.642667917], [41.960447836, -87.669222376], [41.883224344, -87.624971297], [41.852589811, -87.713647735]]
 
 #    def combiner(self, key, values):
 #        yield key, sum(values)
@@ -176,33 +182,46 @@ method COMBINER(centroid_index, list_of_points)
 #         yield key, sum(values)
 
 if __name__ == "__main__":
-    k=3
-    done = False
-    coords = getCoords()
-    print(len(coords))
-    centroids=getRandomCentroids(coords, k)
-    # print(centroids)
+    for _ in range(20):
+        k=5
+        done = False
+        coords = getCoords()
+        print("STARTING CENTROIDS: ")
+        centroids=getRandomCentroids(coords, k)
 
-    # recalculate cluster representative hver gang vi leger til noe nytt i cluster
-    # then iterate the dataset again, compute the sim between
-    # each element and its curent cluster
-
-    mapper(centroids, coords, k)
-    mean = reducer(centroids)
-    # print(mean)
-    i = 1
-    while done == False:
-        centroids = getCentroids(mean)
+        # recalculate cluster representative hver gang vi leger til noe nytt i cluster
+        # then iterate the dataset again, compute the sim between
+        # each element and its curent cluster
         mapper(centroids, coords, k)
-        new_mean = reducer(centroids)
-        i += 1
-        if new_mean == mean:
+        mean = reducer(centroids)
+        # print(mean)
+        i = 1
+        while done == False:
+            centroids = getCentroids(mean)
+            mapper(centroids, coords, k)
+            new_mean = reducer(centroids)
+            # print(new_mean)
+            i += 1
+            """
             print(i)
-            print(new_mean)
-            done = True
-        else:
-            mean = new_mean
-    
+            if i > 20:
+                done = True
+            """
+            finished = True
+            min_dist = 0.0001
+            for j in range(len(new_mean)):
+                distance = math.sqrt(pow(mean[j][0]-new_mean[j][0], 2) + pow(mean[j][1] - new_mean[j][1], 2)) 
+                if distance > min_dist:
+                    finished = False
+            
+            if finished == True:
+                done = True
+                print("DONE")
+                print(new_mean)
+                print(i)
+            else:
+                mean = new_mean
+
 
 
     # var_list = []

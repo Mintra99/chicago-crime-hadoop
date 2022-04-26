@@ -116,41 +116,28 @@ if __name__ == "__main__":
 
     centroids = wrCentroid.retrieveCentroids(file)
 
-    i = 1 # + " --centroids=" \ # mellom data og files
+    iterations = 1 # + " --centroids=" \ # mellom data og files
     start_time = time.time()
     while True:
-        print("ITERATION: " + str(i))
+        # if iterations == 1:
         command = "python3 utkast_fileVersion.py < " \
         + data + " --centroids " + file + " > " + output \
         + " -r hadoop"
-        # if in local
-        # if in hadoop
-        print(command)
-
-        # proc = os.popen(command)
-        # print(str(proc))
-        # python3 utkast_fileVersion.py <
-        # python_preprocess.csv --centroids
-        # starting_centroids.txt >
-        # final_centroids.txt -r inline
-        
-
 
         p = subprocess.Popen(command, shell=True)
-        p.communicate() #now wait plus that you can send commands to process
-        # print(p)
+        p.communicate()
 
         new_centroids = wrCentroid.retrieveCentroids(output)
-        print("NEW CENTROIDS: " + str(new_centroids))
+
 
         # """
-        min_dist = 0.00000001
+        min_dist = 0.001
         done = True
-        for j in range(len(new_centroids)):
-            distance = math.sqrt(pow(centroids[j][0]-new_centroids[j][0], 2) + pow(centroids[j][1] - new_centroids[j][1], 2)) 
+        for i in range(len(new_centroids)):
+            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
             if distance > min_dist:
                 done = False
-
+        
         if done:
             end_time = time.time()
             run_time = end_time - start_time
@@ -163,7 +150,7 @@ if __name__ == "__main__":
                 wrCentroid.writeCentroids(centroids, file)
         # """
         
-        i +=1
+        iterations +=1
         # break
         
     

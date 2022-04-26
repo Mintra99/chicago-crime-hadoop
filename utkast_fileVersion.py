@@ -39,11 +39,9 @@ class KMeansJob(MRJob): # , dim=None):
         self.dimensions = dim
     """
 
-    # WE enable the file passthroughargument
     def configure_args(self):
         super(KMeansJob, self).configure_args()
         self.add_file_arg("--centroids")
-        # self.add_file_option("--inputFile")
     
     def retrieveCentroids(self, file):
         with open(file, "r") as inputFile:
@@ -52,15 +50,8 @@ class KMeansJob(MRJob): # , dim=None):
         for line in output_data:
             line = line.split(';')
             untreated_str_coords = line[1]
-            # print(str(untreated_str_coords.encode()), file=sys.stderr)
-            """
-            sys.stderr.write('Centroid'.encode('utf-8'))
-            sys.stderr.write(untreated_str_coords.encode('utf-8'))
-            """
             str_coords = ''.join(c for c in str(untreated_str_coords) if c not in '[ ]')
-            # print(str_coords, file=sys.stderr)
             coords = str_coords.split(',')
-            # print(coords, file=sys.stderr)
             try:
                 x_coord = float(coords[0].strip())
             except ValueError:
@@ -76,12 +67,11 @@ class KMeansJob(MRJob): # , dim=None):
                 centroids.append(new_coord)
         return centroids
     
-    # I mapper innit lag en kobling til databasen
     def mapper_init(self):
         self.dimensions = self.retrieveCentroids(self.options.centroids)
-    # I mapper insert til databasen
 
     def mapper(self, _, line): # mapper, key, record
+        # self.dimensions = self.retrieveCentroids(self.options.centroids)
         line = line.strip() # remove leading and trailing whitespace
         l_array = line.split(',')
         try:
@@ -99,32 +89,26 @@ class KMeansJob(MRJob): # , dim=None):
         min_dist = math.inf
         closest_centroid = -1
 
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         for c in self.dimensions:
             distance = math.sqrt(pow(new_coord[0]-c[0], 2) + pow(new_coord[1] - c[1], 2)) 
             if distance < min_dist:
                 closest_centroid = self.dimensions.index(c)
                 min_dist = distance
         yield closest_centroid, new_coord
+    
+    def Reducer_init(self):
+        self.dimensions = self.retrieveCentroids(self.options.centroids)
 
     def reducer(self, key, values):
         # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         centroids = self.retrieveCentroids(self.options.centroids)
         final_value = centroids[(key-1)]
         num_points = 0
-        for v in values: #[2:]:
-            # opdater punktteller
+        for v in values:
             num_points += 1
-            # new_average_x = (self.num_points * self.x_y_dimensions[0] + coord[0]) / (self.num_points + 1)
             new_average_x = (num_points * final_value[0] + v[0]) / (num_points + 1)
             new_average_y = (num_points * final_value[1] + v[1]) / (num_points + 1)
             final_value = [new_average_x, new_average_y]
-        """
-        sys.stderr.write('REDUCER'.encode('utf-8'))
-        sys.stderr.write(str(key).encode('utf-8'))
-        sys.stderr.write(str(final_value).encode('utf-8'))
-        sys.stderr.write('REDUCER'.encode('utf-8'))
-        """
         final_value = ";  " + str(final_value) + " ; " + " 1 "
         yield key, final_value
 

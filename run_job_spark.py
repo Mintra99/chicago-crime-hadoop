@@ -85,7 +85,7 @@ class WRCentroids():
             string_item = str(iteration) + ' ; ' + str(coord) + ' ; 1'
             f.write("%s\n" % string_item)
             iteration += 1
-        f.close()
+        f.close()    
     
     def badWrite(self, centroids, file):
         f = open(file, "w+")
@@ -120,57 +120,90 @@ class WRCentroids():
         string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) + ' | run time: ' + str(time_list[2])
         f.write("%s\n" % string_item)
         f.close()
+    
+    def create_file(self, i, centroids):
+        name = "start_c_" + str(i) + ".txt"
+        f = open(name, "w")
+        iteration = 1
+        for item in centroids:
+            string_item = str(iteration) + ' ; ' + str(item) + ' ; 1'
+            f.write("%s\n" % string_item)
+        f.close()
+    
+    def createTimeFile(self, i, time_list):
+        name = "TIME_start_c_" + str(i) + ".txt"
+        f = open(name, "w")
+        string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) + ' | run time: ' + str(time_list[2])
+        f.write("%s\n" % string_item)
+        f.close()
 
 if __name__ == "__main__":
-    start_time = time.time()
-
-    wrCentroid = WRCentroids()
-    kmeans = spark_kmeans()
 
     conf = SparkConf().setAppName("PySPark CrimesChicago").setMaster("local[*]")
     sc = SparkContext(conf=conf)
 
-    #findspark.init()
-    
+        #findspark.init()
+        
     spark = SparkSession.builder.master("local[*]").getOrCreate()
-
-    distFile = sc.textFile("data.txt")
     
-    rdd = spark.read.csv('hdfs://namenode:9000/DAT500/spark_preprocess.csv', schema=crimes_schema)
-    points = rdd.select("Location")
-    centroids = wrCentroid.retrieveCentroids('starting_centroid.txt')
-    
-    # first run
-    pointList = wrCentroid.convertPoints(points)
-    mapped_points = kmeans.map(pointList, centroids)
-    new_centroids = kmeans.reduce(mapped_points)
-    
-    iterations = 1
-    start_time = time.time()
-    # after first run
-    while True:
-        min_dist = 0.00000001
-        done = True
-        for i in range(len(new_centroids)):
-            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
-            if distance > min_dist:
-                done = False
 
-        iterations += 1
-        if done:
-            end_time = time.time()
-            run_time = end_time - start_time
-            time_list = [start_time, end_time, run_time]
-            wrCentroid.writeTime(time_list)
-            print(new_centroids)
-            print("Iterations: %s" % iterations)
-            print("--- %s seconds ---" % (time.time() - start_time))
-            break
-        else:
-            centroids = new_centroids
-            mapped_points = kmeans.map(pointList, centroids)
-            new_centroids = kmeans.reduce(mapped_points)
+    wrCentroid = WRCentroids()
+    starting_centroids = [[[41.812842218, -87.728659989], [41.909408388, -87.675949324], [41.705169694, -87.63708421], [41.898916021, -87.732333607], [41.744235532, -87.551407988]],
+    [[41.899082422, -87.71917838], [41.941161268, -87.642667917], [41.960447836, -87.669222376], [41.883224344, -87.624971297], [41.852589811, -87.713647735]],
+    [[41.910008891, -87.715396172], [41.93688984, -87.721778097], [41.747672195, -87.601090224], [41.848229383, -87.633428407], [41.77514011, -87.590017895]],
+    [[41.760735939, -87.647937849], [41.742372451, -87.637668133], [41.707250544, -87.604006449], [41.924672785, -87.711094988], [41.930414054, -87.762393371]],
+    [[41.88115467, -87.687240771], [41.891867685, -87.616406419], [41.791367197, -87.687633502], [42.000413228, -87.670455154], [41.924656143, -87.712583382]],
+    [[41.855497329, -87.699810548], [41.846596134, -87.68478092], [41.877264269, -87.711775408], [41.822679908, -87.612512046], [41.773892091, -87.58630763]]]
+    for liP in range(len(starting_centroids)):
+        start_time = time.time()
+        wrCentroid.create_file(liP, starting_centroids[liP])
+        name = "start_c_" + str(liP) + ".txt"
+        
 
+        kmeans = spark_kmeans()
+
+
+        distFile = sc.textFile("data.txt")
+        
+        rdd = spark.read.csv('hdfs://namenode:9000/DAT500/spark_preprocess.csv', schema=crimes_schema)
+        points = rdd.select("Location")
+
+        centroids = wrCentroid.retrieveCentroids(name)
+        # centroids = wrCentroid.retrieveCentroids('starting_centroids.txt')
+        
+        # first run
+        pointList = wrCentroid.convertPoints(points)
+        mapped_points = kmeans.map(pointList, centroids)
+        new_centroids = kmeans.reduce(mapped_points)
+        
+        iterations = 1
+        start_time = time.time()
+        # after first run
+        while True:
+            min_dist = 0.001
+            done = True
+            for i in range(len(new_centroids)):
+                distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+                if distance > min_dist:
+                    done = False
+
+            iterations += 1
+            if done:
+                end_time = time.time()
+                run_time = end_time - start_time
+                time_list = [start_time, end_time, run_time]
+                # wrCentroid.writeTime(time_list)
+                wrCentroid.createTimeFile(liP, time_list)
+                print(new_centroids)
+                print("Iterations: %s" % iterations)
+                print("--- %s seconds ---" % (time.time() - start_time))
+                break
+            else:
+                centroids = new_centroids
+                mapped_points = kmeans.map(pointList, centroids)
+                new_centroids = kmeans.reduce(mapped_points)
+
+    # """
     """
     i = 1 # + " --centroids=" \ # mellom data og files
     #while True:
