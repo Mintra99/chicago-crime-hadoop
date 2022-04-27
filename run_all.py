@@ -119,96 +119,87 @@ if __name__ == "__main__":
     "utkast_fileComposer.py",
     "utkast_fileComposer_init.py"]
     for liP in range(2):
-        print()
-        print()
-        start_time = time.time()
-        version = version_list[liP]
+        for v in range(len(version_list)):
+            print()
+            print()
+            version = version_list[v]
+            start_time = time.time()
+            
 
-        file = "HADOOP_" + str(version) + ".txt"
+            file = "HADOOP_" + str(version) + ".txt"
 
-        # wrCentroid.badWrite(dim, 'old_type_centroid.txt')
-        output = "HADOOP_FINAL_" + str(version) + ".txt"
-        
-        # """ 
-        wrCentroid.create_file(starting_centroids[liP], version)
-        outputFile = open(output, "w+")
-        outputFile.close()
+            # wrCentroid.badWrite(dim, 'old_type_centroid.txt')
+            output = "HADOOP_FINAL_" + str(version) + ".txt"
+            
+            """ 
+            wrCentroid.create_file(starting_centroids[liP], version)
+            outputFile = open(output, "w+")
+            outputFile.close()
 
-        centroids = wrCentroid.retrieveCentroids(file)
-        print(centroids)
-        # """
+            centroids = wrCentroid.retrieveCentroids(file)
+            print(centroids)
+            """
 
-        # parser = argparse
-        """
-        parser = argparse.ArgumentParser()
+            iterations = 1 # + " --centroids=" \ # mellom data og files
+            start_time = time.time()
 
-        parser.add_argument("--inputFile", type=str,
-        help="python_preprocess.csv")
+            print(file)
+            print(output)
 
-        args = parser.parse_args()
-        data = args.inputFile # 'python_preprocessed.csv'
-        """
+            """
+            end_time = time.time()
+            run_time = end_time - start_time
+            time_list = [start_time, end_time, run_time]
+            wrCentroid.createTimeFile(0, time_list, liP)
+            """
 
-        iterations = 1 # + " --centroids=" \ # mellom data og files
-        start_time = time.time()
-
-        print(file)
-        print(output)
-
-        """
-        end_time = time.time()
-        run_time = end_time - start_time
-        time_list = [start_time, end_time, run_time]
-        wrCentroid.createTimeFile(0, time_list, liP)
-        """
-
-        """
-        command = "python3 utkast_fileVersion.py < " \
-        + "python_preprocess.csv " + " --centroids " + file + " > " + output \
-        + " -r hadoop"
-        print(command)
-        """
-
-        
-        while True:
-            # if iterations == 1:
+            """
             command = "python3 utkast_fileVersion.py < " \
             + "python_preprocess.csv " + " --centroids " + file + " > " + output \
             + " -r hadoop"
+            print(command)
+            """
 
-            p = subprocess.Popen(command, shell=True)
-            p.communicate()
-
-            new_centroids = wrCentroid.retrieveCentroids(output)
-
-            min_dist = 0.001
-            done = True
-            for i in range(len(new_centroids)):
-                distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
-                if distance > min_dist:
-                    done = False
             
-            if done:
-                end_time = time.time()
-                run_time = end_time - start_time
-                time_list = [start_time, end_time, run_time]
-                wrCentroid.createTimeFile(liP, time_list, liP)
-                break
-            else:
-                centroids = new_centroids
-                if len(centroids) != 0:
-                    wrCentroid.writeCentroids(centroids, file)
+            while True:
+                # if iterations == 1:
+                command = "python3 utkast_fileVersion.py < " \
+                + "python_preprocess.csv " + " --centroids " + file + " > " + output \
+                + " -r hadoop"
+
+                p = subprocess.Popen(command, shell=True)
+                p.communicate()
+
+                new_centroids = wrCentroid.retrieveCentroids(output)
+
+                min_dist = 0.001
+                done = True
+                for i in range(len(new_centroids)):
+                    distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+                    if distance > min_dist:
+                        done = False
+                
+                if done:
+                    end_time = time.time()
+                    run_time = end_time - start_time
+                    time_list = [start_time, end_time, run_time]
+                    wrCentroid.createTimeFile(liP, time_list, liP)
+                    break
+                else:
+                    centroids = new_centroids
+                    if len(centroids) != 0:
+                        wrCentroid.writeCentroids(centroids, file)
+                
+                iterations +=1
+            # """
+                # break
             
-            iterations +=1
-        # """
-            # break
         
-    
-    # mapper is provided data from hdfs
-    # os.remove(output)
-    """
-        "python hadoop.py < data + starting_cemtroids > + output -r hadoop"
-    """
+        # mapper is provided data from hdfs
+        # os.remove(output)
+        """
+            "python hadoop.py < data + starting_cemtroids > + output -r hadoop"
+        """
 
 
 
