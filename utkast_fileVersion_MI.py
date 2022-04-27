@@ -67,10 +67,8 @@ class KMeansJob(MRJob): # , dim=None):
                 centroids.append(new_coord)
         return centroids
     
-    """
     def mapper_init(self):
         self.dimensions = self.retrieveCentroids(self.options.centroids)
-    """
 
     def mapper(self, _, line): # mapper, key, record
         # self.dimensions = self.retrieveCentroids(self.options.centroids)

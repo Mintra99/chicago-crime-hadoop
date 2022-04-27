@@ -67,10 +67,8 @@ class KMeansJob(MRJob): # , dim=None):
                 centroids.append(new_coord)
         return centroids
     
-    """
     def mapper_init(self):
         self.dimensions = self.retrieveCentroids(self.options.centroids)
-    """
 
     def mapper(self, _, line): # mapper, key, record
         # self.dimensions = self.retrieveCentroids(self.options.centroids)
@@ -107,13 +105,19 @@ class KMeansJob(MRJob): # , dim=None):
         # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         centroids = self.retrieveCentroids(self.options.centroids)
         final_value = centroids[(key-1)]
-        num_points = 0
+        num_points = 1
+        final_x = final_value[0]
+        final_y = final_value[1]
+        
         for v in values:
             num_points += 1
-            new_average_x = (num_points * final_value[0] + v[0]) / (num_points + 1)
-            new_average_y = (num_points * final_value[1] + v[1]) / (num_points + 1)
-            final_value = [new_average_x, new_average_y]
-        final_value = ";  " + str(final_value) + " ; " + " 1 "
+            final_x += v[0]
+            final_y += v[1]
+        final_value = [final_x, final_y]
+        new_average_x = (final_x) / (num_points)
+        new_average_y = (final_y) / (num_points)
+        final_value = [new_average_x, new_average_y]
+        final_value = ";  " + str(final_value) + " ; " + str(num_points)
         yield key, final_value
 
 if __name__ == "__main__":
