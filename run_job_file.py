@@ -116,28 +116,41 @@ if __name__ == "__main__":
 
     centroids = wrCentroid.retrieveCentroids(file)
 
-    iterations = 1 # + " --centroids=" \ # mellom data og files
+    i = 1 # + " --centroids=" \ # mellom data og files
     start_time = time.time()
     while True:
-        # if iterations == 1:
+        print("ITERATION: " + str(i))
         command = "python3 utkast_fileVersion.py < " \
         + data + " --centroids " + file + " > " + output \
         + " -r hadoop"
+        # if in local
+        # if in hadoop
+        print(command)
+
+        # proc = os.popen(command)
+        # print(str(proc))
+        # python3 utkast_fileVersion.py <
+        # python_preprocess.csv --centroids
+        # starting_centroids.txt >
+        # final_centroids.txt -r inline
+        
+
 
         p = subprocess.Popen(command, shell=True)
-        p.communicate()
+        p.communicate() #now wait plus that you can send commands to process
+        # print(p)
 
         new_centroids = wrCentroid.retrieveCentroids(output)
-
+        print("NEW CENTROIDS: " + str(new_centroids))
 
         # """
-        min_dist = 0.001
+        min_dist = 0.00000001
         done = True
-        for i in range(len(new_centroids)):
-            distance = math.sqrt(pow(centroids[i][0]-new_centroids[i][0], 2) + pow(centroids[i][1] - new_centroids[i][1], 2)) 
+        for j in range(len(new_centroids)):
+            distance = math.sqrt(pow(centroids[j][0]-new_centroids[j][0], 2) + pow(centroids[j][1] - new_centroids[j][1], 2)) 
             if distance > min_dist:
                 done = False
-        
+
         if done:
             end_time = time.time()
             run_time = end_time - start_time
@@ -150,7 +163,7 @@ if __name__ == "__main__":
                 wrCentroid.writeCentroids(centroids, file)
         # """
         
-        iterations +=1
+        i +=1
         # break
         
     
@@ -159,31 +172,3 @@ if __name__ == "__main__":
     """
         "python hadoop.py < data + starting_cemtroids > + output -r hadoop"
     """
-
-
-
-
-
-"""
-# while 1 < 2:
-for i in range(2):
-    if i == 0:
-        old_dim = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
-    mr_job = KMeansJob(args=['-r', 'hadoop', '--jobconf', 'my.job.settings.starting_values='+ str(old_dim)])
-    with mr_job.make_runner() as runner:
-        # '--conf-path', 'mrjob.conf',
-        new_dim = [0, 0, 0, 0]
-        runner.run()
-        for key, value in mr_job.parse_output(runner.cat_output()):
-            new_dim[key] = value
-        if new_dim == old_dim:
-            p("DONE")
-            p(new_dim)
-            break
-        old_dim = new_dim
-        p(new_dim)
-"""
-
-    # you can read external files in the mapper
-
-    # ... etc
