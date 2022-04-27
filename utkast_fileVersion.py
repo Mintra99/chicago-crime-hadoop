@@ -73,7 +73,7 @@ class KMeansJob(MRJob): # , dim=None):
     """
 
     def mapper(self, _, line): # mapper, key, record
-        # self.dimensions = self.retrieveCentroids(self.options.centroids)
+        self.dimensions = self.retrieveCentroids(self.options.centroids)
         line = line.strip() # remove leading and trailing whitespace
         l_array = line.split(',')
         try:
