@@ -82,8 +82,8 @@ class WRCentroids():
         f.write("%s\n" % string_item)
         f.close()
     
-    def create_file(self, centroids, ver):
-        name = "HADOOP_" + str(ver) + ".txt"
+    def create_file(self, centroids, name):
+        print(name)
         f = open(name, "w")
         iteration = 1
         for item in centroids:
@@ -91,16 +91,22 @@ class WRCentroids():
             f.write("%s\n" % string_item)
         f.close()
     
-    def createTimeFile(self, i, time_list, iteration):
-        name = "HADOOP_TIME_" + str(i) + ".txt"
+    def createTimeFile(self, time_list, start_c, version, iterations, file):
+        name = "TIME_LIST_" + str(file)
         f = open(name, "w")
-        string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) + ' | run time: ' + str(time_list[2]) + " | iterations: " + str(iteration)
+        string_item = 'start: ' + str(time_list[0]) + ' | end: ' + str(time_list[1]) \
+        + ' | run time: ' + str(time_list[2]) + ' | start_coord: ' + str(start_c) \
+        + " | version: " + str(version) + " | iterations: " + str(iterations)
+ 
+        
         f.write("%s\n" % string_item)
         f.close()
 
 
 # file = "starting_centroids.txt"
 output = 'final_centroids.txt'
+
+
 if __name__ == "__main__":
     wrCentroid = WRCentroids()
     
@@ -108,62 +114,24 @@ if __name__ == "__main__":
     starting_centroids = [[[41.812842218, -87.728659989], [41.909408388, -87.675949324], [41.705169694, -87.63708421], [41.898916021, -87.732333607], [41.744235532, -87.551407988]],
     [[41.899082422, -87.71917838], [41.941161268, -87.642667917], [41.960447836, -87.669222376], [41.883224344, -87.624971297], [41.852589811, -87.713647735]],
     [[41.910008891, -87.715396172], [41.93688984, -87.721778097], [41.747672195, -87.601090224], [41.848229383, -87.633428407], [41.77514011, -87.590017895]],
-    [[41.760735939, -87.647937849], [41.742372451, -87.637668133], [41.707250544, -87.604006449], [41.924672785, -87.711094988], [41.930414054, -87.762393371]],
-    [[41.88115467, -87.687240771], [41.891867685, -87.616406419], [41.791367197, -87.687633502], [42.000413228, -87.670455154], [41.924656143, -87.712583382]],
-    [[41.855497329, -87.699810548], [41.846596134, -87.68478092], [41.877264269, -87.711775408], [41.822679908, -87.612512046], [41.773892091, -87.58630763]]]
-    
+    [[41.760735939, -87.647937849], [41.742372451, -87.637668133], [41.707250544, -87.604006449], [41.924672785, -87.711094988], [41.930414054, -87.762393371]]]
     version_list = ["utkast_fileVersion_MI.py",
-    "utkast_fileVersion_MRI.py",
-    "utkast_redV2_fileVersion_MI.py",
-    "utkast_fileVersion.py",
-    "utkast_fileComposer.py",
+    "utkast_fileVersion_MRI.py", "utkast_redV2_fileVersion_MI.py",
+    "utkast_fileVersion.py", "utkast_fileComposer.py",
     "utkast_fileComposer_init.py"]
     for liP in range(2):
+        start_c = starting_centroids[liP]
+
         for v in range(len(version_list)):
-            print()
-            print()
             version = version_list[v]
+            file = "HADOOP_" + str(version) + str(liP) + ".txt"
+            output = "HADOOP_FINAL_" + str(version) + str(liP) + ".txt"
+            wrCentroid.create_file(start_c, file)
+
+            iterations = 1
             start_time = time.time()
-            
-
-            file = "HADOOP_" + str(version) + ".txt"
-
-            # wrCentroid.badWrite(dim, 'old_type_centroid.txt')
-            output = "HADOOP_FINAL_" + str(version) + ".txt"
-            
-            """ 
-            wrCentroid.create_file(starting_centroids[liP], version)
-            outputFile = open(output, "w+")
-            outputFile.close()
-
-            centroids = wrCentroid.retrieveCentroids(file)
-            print(centroids)
-            """
-
-            iterations = 1 # + " --centroids=" \ # mellom data og files
-            start_time = time.time()
-
-            print(file)
-            print(output)
-
-            """
-            end_time = time.time()
-            run_time = end_time - start_time
-            time_list = [start_time, end_time, run_time]
-            wrCentroid.createTimeFile(0, time_list, liP)
-            """
-
-            """
-            command = "python3 utkast_fileVersion.py < " \
-            + "python_preprocess.csv " + " --centroids " + file + " > " + output \
-            + " -r hadoop"
-            print(command)
-            """
-
-            
             while True:
-                # if iterations == 1:
-                command = "python3 utkast_fileVersion.py < " \
+                command = "python3 " + str(version) + " < " \
                 + "python_preprocess.csv " + " --centroids " + file + " > " + output \
                 + " -r hadoop"
 

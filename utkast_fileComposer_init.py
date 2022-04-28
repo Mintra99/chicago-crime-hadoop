@@ -127,13 +127,11 @@ class KMeansJob(MRJob): # , dim=None):
         new_coord = [x_coord, y_coord]
         return new_coord
     
-    def composer_init(self):
-        self.comp_dimensions = self.retrieveCentroids(self.options.centroids)
-    
+    def combiner_init(self):
+        self.comp_dimensions = self.retrieveCentroids(self.options.centroids)    
 
-    def composer(self, key, values):
+    def combiner(self, key, values):
         final_value = self.comp_dimensions[(key-1)]
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         num_points = 0
         final_x = 0
         final_y = 0

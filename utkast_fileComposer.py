@@ -111,9 +111,6 @@ class KMeansJob(MRJob): # , dim=None):
     def get_int_coord(self, v):
         v_info = ''.join(c for c in str(v) if c not in '[ "]')
         coord_num = v_info.split(';')
-        # num = int(coord_num[2])
-        # num_points += num
-
         coords = coord_num[1].split(',')
         try:
             x_coord = float(coords[0].strip())
@@ -128,14 +125,12 @@ class KMeansJob(MRJob): # , dim=None):
         return new_coord
     
     """
-    def composer_init(self):
+    def combiner_init(self):
         self.comp_dimensions = self.retrieveCentroids(self.options.centroids)
     """
 
-    def composer(self, key, values):
+    def combiner(self, key, values):
         self.comp_dimensions = self.retrieveCentroids(self.options.centroids)
-        # final_value = self.comp_dimensions[(key-1)]
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         num_points = 0
         final_x = 0
         final_y = 0

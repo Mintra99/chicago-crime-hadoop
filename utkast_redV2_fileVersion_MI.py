@@ -102,7 +102,6 @@ class KMeansJob(MRJob): # , dim=None):
 |   """
 
     def reducer(self, key, values):
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         centroids = self.retrieveCentroids(self.options.centroids)
         final_value = centroids[(key-1)]
         num_points = 1
