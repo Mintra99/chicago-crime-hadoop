@@ -68,7 +68,6 @@ class WRCentroids():
         f.close()
     
     def create_file(self, centroids, name):
-        print(name)
         f = open(name, "w")
         iteration = 1
         for item in centroids:
