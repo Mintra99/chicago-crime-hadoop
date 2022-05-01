@@ -169,7 +169,7 @@ class KMeansJob(MRJob): # , dim=None):
         self.r_centroids = self.retrieveCentroids(self.options.centroids)
     # I mapper insert til databasen
 
-    def reducer_COMP(self, key, values):
+    def reducer(self, key, values):
         final_value = self.r_centroids[(key-1)]
         num_points = 1
         for v in values: #[2:]:

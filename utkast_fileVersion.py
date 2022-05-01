@@ -5,16 +5,6 @@ import math
 from mrjob.protocol import JSONValueProtocol
 from mrjob.protocol import RawValueProtocol
 from mrjob.compat import jobconf_from_env
-import sys
-
-"""
-output = Kmeansjob(original_dimensions)
-while loop
-    new_output = Kmeansjob(output)
-    if new_output == output:
-        break
-    output = new_output
-"""
 
 """
 For example, a ~mrjob.job.MRJob could use
@@ -33,11 +23,6 @@ class KMeansJob(MRJob): # , dim=None):
     # how to pass the parameters in mapper step
     # We can do run loop when calling hadoop
     # it might not be necessary
-
-    """
-    def __init__(self, dim):
-        self.dimensions = dim
-    """
 
     def configure_args(self):
         super(KMeansJob, self).configure_args()
@@ -66,11 +51,7 @@ class KMeansJob(MRJob): # , dim=None):
             if len(new_coord) == 2:
                 centroids.append(new_coord)
         return centroids
-    
-    """
-    def mapper_init(self):
-        self.dimensions = self.retrieveCentroids(self.options.centroids)
-    """
+
 
     def mapper(self, _, line): # mapper, key, record
         self.dimensions = self.retrieveCentroids(self.options.centroids)
@@ -80,14 +61,11 @@ class KMeansJob(MRJob): # , dim=None):
             x_coord = float(l_array[-2].strip())
         except ValueError:
             x_coord = float(0)
-        
         try:
             y_coord = float(l_array[-1].strip())
         except ValueError:
             y_coord = float(0)
-
         new_coord = [x_coord, y_coord]
-
         min_dist = math.inf
         closest_centroid = -1
 
@@ -98,13 +76,8 @@ class KMeansJob(MRJob): # , dim=None):
                 min_dist = distance
         yield closest_centroid, new_coord
     
-    """
-    def reducer_init(self):
-        self.r_dimensions = self.retrieveCentroids(self.options.centroids)
-|   """
 
     def reducer(self, key, values):
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         centroids = self.retrieveCentroids(self.options.centroids)
         final_value = centroids[(key-1)]
         num_points = 0
@@ -117,12 +90,5 @@ class KMeansJob(MRJob): # , dim=None):
         yield key, final_value
 
 if __name__ == "__main__":
-    """
-    dim = [[41.98131263, -87.806945473],
-    [41.771488695, -87.667641182],
-    [41.884494554, -87.627138636],
-    [41.754594962, -87.70872738],
-    [41.840581183804865, -87.67204270608761]]
-    """
     # dim = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
     KMeansJob.run() # dim)

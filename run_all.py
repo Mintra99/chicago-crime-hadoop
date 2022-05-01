@@ -22,15 +22,7 @@ import time
 # --file
 
 class WRCentroids():
-    """
-    def initialCentroids(self, file, nclusters):
-        initial_centroids = [[41.75722769555852, -87.64231203969189],
-        [41.90692766400154, -87.76994270927075],
-        [41.86249005695598, -87.6402480122286],
-        [41.934092855429704, -87.70006184850016]]
-        return initial_centroids
-    """
-    
+
     def retrieveCentroids(self, file):
         with open(file, "r") as inputFile:
             output_data = inputFile.readlines()
@@ -64,13 +56,6 @@ class WRCentroids():
             string_item = str(iteration) + ' ; ' + str(coord) + ' ; 1'
             f.write("%s\n" % string_item)
             iteration += 1
-        f.close()
-    
-    def badWrite(self, centroids, file):
-        f = open(file, "w+")
-        for item in centroids:
-            string_item = ''.join(c for c in str(item) if c not in "[]")
-            f.write("%s\n" % string_item)
         f.close()
     
     def checkCloseness(a, b, rel_tol=1e-05, abs_tol=0.0):
@@ -119,7 +104,7 @@ if __name__ == "__main__":
     "utkast_fileVersion_MRI.py", "utkast_redV2_fileVersion_MI.py",
     "utkast_fileVersion.py", "utkast_fileComposer.py",
     "utkast_fileComposer_init.py"]
-    for liP in range(2):
+    for liP in range(0, len(starting_centroids)):
         start_c = starting_centroids[liP]
 
         for v in range(len(version_list)):

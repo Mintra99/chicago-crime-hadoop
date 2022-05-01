@@ -199,6 +199,7 @@ method COMBINER(centroid_index, list_of_points)
 #    def reducer(self, key, values):
 #         yield key, sum(values)
 
+
 if __name__ == "__main__":
     k=5
     done = False

@@ -5,39 +5,8 @@ import math
 from mrjob.protocol import JSONValueProtocol
 from mrjob.protocol import RawValueProtocol
 from mrjob.compat import jobconf_from_env
-import sys
 
-"""
-output = Kmeansjob(original_dimensions)
-while loop
-    new_output = Kmeansjob(output)
-    if new_output == output:
-        break
-    output = new_output
-"""
-
-"""
-For example, a ~mrjob.job.MRJob could use
-jobconf_from_env('map.input.file') to get the name of the
-file a mapper is reading input from.
-
-If the name of the jobconf variable is different in different
-versions of Hadoop (e.g. in Hadoop 2.0, map.input.file is
-mapreduce.map.input.file), we'll automatically try all
-variants before giving up.
-
-Return *default* if that jobconf variable isn't set.
-"""
-
-class KMeansJob(MRJob): # , dim=None):
-    # how to pass the parameters in mapper step
-    # We can do run loop when calling hadoop
-    # it might not be necessary
-
-    """
-    def __init__(self, dim):
-        self.dimensions = dim
-    """
+class KMeansJob(MRJob):
 
     def configure_args(self):
         super(KMeansJob, self).configure_args()
@@ -102,7 +71,6 @@ class KMeansJob(MRJob): # , dim=None):
 |   """
 
     def reducer(self, key, values):
-        # dimensions = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
         centroids = self.retrieveCentroids(self.options.centroids)
         final_value = centroids[(key-1)]
         num_points = 0
@@ -115,12 +83,5 @@ class KMeansJob(MRJob): # , dim=None):
         yield key, final_value
 
 if __name__ == "__main__":
-    """
-    dim = [[41.98131263, -87.806945473],
-    [41.771488695, -87.667641182],
-    [41.884494554, -87.627138636],
-    [41.754594962, -87.70872738],
-    [41.840581183804865, -87.67204270608761]]
-    """
     # dim = [[41.775185697, -87.659244248],[41.926404101, -87.792881805],[41.846664648, -87.617318718],[41.954345702, -87.726412567]]
     KMeansJob.run() # dim)

@@ -313,10 +313,12 @@ if __name__ == "__main__":
         a2 = reducer_WOC_ASINFILE(i, list_i, centroids)
         a1List.append(a1)
         a2List.append(a2)
+    """
     print('--------------------')
     print(a1List)
     print(a2List)
-
+    """
+    
     to_c = []
     a3List = []
     for i in range(5):
@@ -332,17 +334,19 @@ if __name__ == "__main__":
 
         composer_result = []
         for k in range(len(to_c)):
-            comp_part_ans = combiner(i, to_c[k], centroids)
+            comp_part_ans = composer(i, to_c[k], centroids)
             # print(len(to_c[k]))
             composer_result.append(comp_part_ans[1])
         
         ans3 = reducer_COMP(i, composer_result, centroids)
         a3List.append(ans3)
     
+    """
     for i in range(5):
         print(a1List[i])
         print(a2List[i])
         print(a3List[i])
+    """
     
     
 
