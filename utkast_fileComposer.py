@@ -7,37 +7,7 @@ from mrjob.protocol import RawValueProtocol
 from mrjob.compat import jobconf_from_env
 import sys
 
-"""
-output = Kmeansjob(original_dimensions)
-while loop
-    new_output = Kmeansjob(output)
-    if new_output == output:
-        break
-    output = new_output
-"""
-
-"""
-For example, a ~mrjob.job.MRJob could use
-jobconf_from_env('map.input.file') to get the name of the
-file a mapper is reading input from.
-
-If the name of the jobconf variable is different in different
-versions of Hadoop (e.g. in Hadoop 2.0, map.input.file is
-mapreduce.map.input.file), we'll automatically try all
-variants before giving up.
-
-Return *default* if that jobconf variable isn't set.
-"""
-
 class KMeansJob(MRJob): # , dim=None):
-    # how to pass the parameters in mapper step
-    # We can do run loop when calling hadoop
-    # it might not be necessary
-
-    """
-    def __init__(self, dim):
-        self.dimensions = dim
-    """
 
     # WE enable the file passthroughargument
     def configure_args(self):
@@ -105,7 +75,7 @@ class KMeansJob(MRJob): # , dim=None):
             if distance < min_dist:
                 closest_centroid = self.dimensions.index(c)
                 min_dist = distance
-        string = " ; " + str(new_coord) + " ; " + str(1)
+        string = " ; " + str(new_coord) + " ; 1 "
         yield closest_centroid, string
 
     def get_int_coord(self, v):
